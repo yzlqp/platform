@@ -1,0 +1,22 @@
+
+#define GPIO_ACTIVE_HIGH 0
+#define GPIO_ACTIVE_LOW 1
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/ {
+
+axidev@0 {
+		compatible = "axi_ctrl_interface";
+		status = "okay";
+		default-state = "on";
+	
+		reserved-gpio = <&gpio0 69 GPIO_ACTIVE_HIGH>,<&gpio0 70 GPIO_ACTIVE_HIGH>;
+		key-gpio = <&gpio0 71 GPIO_ACTIVE_HIGH>;
+		
+		interrupt-parent = <&intc>;
+		interrupts = <0 31 IRQ_TYPE_EDGE_RISING>,<0 30 IRQ_TYPE_EDGE_RISING>,<0 33 IRQ_TYPE_EDGE_RISING>; 
+		
+		reg = <0x43C00000 0x4>,<0x43C00004 0x4>,<0x43C00008 0x4>,<0x43C0000C 0x4>,
+			  <0x43C00010 0x4>,<0x43C00014 0x4>,<0x43C00018 0x4>,<0x43C0001C 0x4>;
+	};
+};

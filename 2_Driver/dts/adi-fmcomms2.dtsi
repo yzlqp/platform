@@ -1,0 +1,380 @@
+/ {
+	clocks {
+		ad9361_clkin: clock@0 {
+			compatible = "fixed-clock";
+
+			clock-frequency = <40000000>;
+			clock-output-names = "ad9361_ext_refclk";
+			#clock-cells = <0>;
+		};
+	};
+};
+
+&fmc_spi {
+	adc0_ad9361: ad9361-phy@0 {
+		compatible = "adi,ad9361";
+		reg = <0>;
+
+
+
+	/* ------ SPI Setup ------ */
+		spi-cpha;
+		spi-max-frequency = <10000000>;
+
+
+
+	/* ------ Clocks ------ */
+		clocks = <&ad9361_clkin 0>;
+		clock-names = "ad9361_ext_refclk";
+		clock-output-names = "rx_sampl_clk", "tx_sampl_clk";
+		#clock-cells = <1>;
+
+
+
+		//adi,debug-mode-enable;
+
+
+
+	/* ------ Base Configuration Mode Setup ------ */
+		adi,2rx-2tx-mode-enable;
+			/*Use 2Rx2Tx mode - default 1Rx1Tx (AD9364 must clear this)*/
+		//adi,1rx-1tx-mode-use-rx-num = <0>;
+			/*Valid only in 1Rx1Tx mode for AD9361 and AD9363, Selects which RX channel is used*/
+        //adi,1rx-1tx-mode-use-tx-num = <0>;
+			/*Valid only in 1Rx1Tx mode for AD9361 and AD9363, Selects which TX channel is used*/
+		
+		
+		
+	/* ------ ENSM Mode Control ------ */
+		adi,frequency-division-duplex-mode-enable;
+			/*Use FDD mode - default TDD*/
+		//adi,tdd-use-dual-synth-mode-enable;
+			/*In TDD mode use Dual Synth mode - default only one Synth is enabled*/
+		//adi,tdd-skip-vco-cal-enable;
+			/*Option to skip VCO cal in TDD mode when moving from TX/RX to Alert*/
+		//adi,ensm-enable-pin-pulse-mode-enable;
+			/*ENSM control Pins (ENABLE/TXNRX) use Pulse mode - default Level Mode*/
+		//adi,ensm-enable-txnrx-control-enable;
+			/*ENSM control Pins (ENABLE/TXNRX) control ENSM state - default SPI writes*/
+		//adi,frequency-division-duplex-independent-mode-enable;
+			/*Use independent FDD mode - allows individual control over RX and TX (Pin Mode Only)*/
+		
+
+
+	/* ------ LO Control ------ */
+		adi,rx-synthesizer-frequency-hz = /bits/ 64 <1000000000>;
+			/*RX LO power-up Frequency in Hz*/
+		adi,tx-synthesizer-frequency-hz = /bits/ 64 <1000000000>;
+			/*TX LO power-up Frequency in Hz*/
+		//adi,tx-fastlock-delay-ns
+			/*TX fastlock delay in ns*/
+		//adi,rx-fastlock-delay-ns
+			/*RX fastlock delay in ns*/
+		//adi,rx-fastlock-pincontrol-enable
+			/*RX fastlock pin control enable*/
+		//adi,tx-fastlock-pincontrol-enable
+			/*RX fastlock pin control enable*/
+		//adi,trx-synthesizer-target-fref-overwrite-hz
+			/*This allows forcing a lower F_REF window (worse phase noise, better fractional spurs)*/
+		//adi,external-tx-lo-enable
+			/*Enables external LO for TX*/
+		//adi,external-rx-lo-enable
+			/*Enables external LO for RX*/
+
+
+
+	/* ------ Rate & BW Control ------ */
+		adi,rf-rx-bandwidth-hz = <10000000>;
+			/*RX RF Bandwidth power-up setting*/
+		adi,rf-tx-bandwidth-hz = <10000000>;
+			/*TX RF Bandwidth power-up setting*/
+			/*			                    BBPLL     ADC        R2CLK     R1CLK    CLKRF    RSAMPL  */
+		adi,rx-path-clock-frequencies = <983040000 245760000 122880000 61440000 30720000 30720000>;
+			/*RX Path Frequencies in Hz*/
+			/*								BBPLL     DAC        T2CLK     T1CLK    CLKTF    TSAMPL  */
+		adi,tx-path-clock-frequencies = <983040000 245760000 122880000 61440000 30720000 30720000>;
+			/*TX Path Frequencies in Hz*/
+
+
+
+	/* ------ RF Port Select ------ */
+			 /*
+			 * 0 = (RX1A_N &  RX1A_P) and (RX2A_N & RX2A_P) enabled; balanced
+			 * 1 = (RX1B_N &  RX1B_P) and (RX2B_N & RX2B_P) enabled; balanced
+			 * 2 = (RX1C_N &  RX1C_P) and (RX2C_N & RX2C_P) enabled; balanced
+			 * 3 = RX1A_N and RX2A_N enabled; unbalanced
+			 * 4 = RX1A_P and RX2A_P enabled; unbalanced
+			 * 5 = RX1B_N and RX2B_N enabled; unbalanced
+			 * 6 = RX1B_P and RX2B_P enabled; unbalanced
+			 * 7 = RX1C_N and RX2C_N enabled; unbalanced
+			 * 8 = RX1C_P and RX2C_P enabled; unbalanced
+			 */
+		adi,rx-rf-port-input-select = <0>; 
+			/* (RX1A_N & RX1A_P) and (RX2A_N & RX2A_P) enabled; balanced */
+			/* ------ adi,tx-rf-port-input-select ------ 
+			 * 0	TX1A, TX2A
+			 * 1	TX1B, TX2B
+			 */
+		adi,tx-rf-port-input-select = <0>; 
+			/* TX1A, TX2A */
+		//adi,rx1-rx2-phase-inversion-enable
+			/*If enabled RX1 and RX2 are phase aligned*/
+
+
+
+	/* ------ TX Attenuation Control ------ */
+		adi,tx-attenuation-mdB = <46000>;
+			/*TX power-up attenuation in milli dB*/
+		//adi,update-tx-gain-in-alert-enable;
+			/*in TDD mode disable immediate TX Gain update and wait until ENSM moves to Alert*/
+		adi,tx-lo-powerdown-managed-enable;
+			/*??????*/
+
+
+
+	/* ------ Reference Clock Control ------ */	
+		//adi,xo-disable-use-ext-refclk-enable;
+			/*Disable XO use Ext CLK into XTAL_N - default XO into XTAL*/
+		adi,dcxo-coarse-and-fine-tune = <8 5920>;      /*8 5920*/
+			/*DCXO Fine and Coarse Tune*/
+
+
+
+	/* ------ Digital Interface Control ------ */
+		 	/* adi,digital-interface-tune-skip-mode:
+		 	 * 0 = TUNE RX&TX
+		 	 * 1 = SKIP TX
+		 	 * 2 = SKIP ALL
+		 	 */
+		adi,digital-interface-tune-skip-mode = <0>;
+			/*Allows skipping the digital interface tune 0=don't skip, 1=skip TX tuning,
+			2=skip RX and TX and use rx-data-clock-delay, adi,rx-data-delay, adi,tx-fb-clock-delay,
+		  	adi,tx-data-delay instead */
+		adi,pp-tx-swap-enable;
+			/*Clearing this option swaps I and Q (performs spectral inversion)*/
+		adi,pp-rx-swap-enable;
+			/*Clearing this option swaps I and Q (performs spectral inversion)*/
+		adi,rx-frame-pulse-mode-enable;
+			/*The AD9361 outputs an Rx frame sync signal indicating the beginning of an Rx frame. When this
+			option is clear, Rx frame goes high coincident with the first valid receive sample. It stays
+			high as long as the receivers are enabled. When this option is set, the Rx frame signal 
+			toggles with a duty cycle of 50%.*/
+		adi,lvds-mode-enable;
+			/*When clear, the data port uses single-ended CMOS. Set this bit to use LVDS.*/
+		adi,lvds-bias-mV = <150>;
+			/*LVDS driver amplitude control. VOD = 75 mV to 450 mV*/
+		adi,lvds-rx-onchip-termination-enable;
+			/*Use LVDS Rx100 on-chip termination for all data path bits, Tx_FRAME, and FB_CLK. Do not set this bit in CMOS mode*/
+		adi,rx-data-delay = <4>;
+			/*These bits affect the DATA_CLK and the Rx data delays. The typical delay is approximately 0.3 ns/LSB. 
+			Rx Frame is delayed the same amount as the data port bits. Minimum delay setting 
+			is 0x0 and maximum delay is 0xF. Set this register so that the data from the AD9361 meets 
+			BBP setup/hold specifications.*/
+		adi,tx-fb-clock-delay = <7>;
+			/*This register function the same as Register 0x006 but affects the FB_CLK, 
+			Tx_FRAME, and Tx Data bits. Tx frame sync is delayed the same
+			amount as the data port bits. Set this register so that the data from the BBP meets 
+			the AD9361 setup/hold specifications.*/
+		//adi,fdd-rx-rate-2tx-enable;
+			/*When clear, the Rx sample rate is equal to the Tx sample rate. 
+			When set, the Rx rate is twice the Tx rate. This option can only be set 
+			when option D3 of Register 0x012 is clear (full duplex mode).*/
+
+		
+
+	/* ------ Gain Control ------ */
+		//adi,split-gain-table-mode-enable;
+			/*Enable Split Gain Table Mode - default Full Table*/
+		//adi,gaintable-name = "ad9361_std_gaintable";
+			/* adi,gc-rx[1|2]-mode:
+		 	* 0 = RF_GAIN_MGC
+		 	* 1 = RF_GAIN_FASTATTACK_AGC
+		 	* 2 = RF_GAIN_SLOWATTACK_AGC
+		 	* 3 = RF_GAIN_HYBRID_AGC
+		 	*/
+		adi,gc-rx1-mode = <2>;
+			/*RX1 Gain control operation: Manual gain (0); 
+			Fast attack AGC (1); Slow attack AGC (2); Hybrid AGC (3). 
+			See register 0x0FA, bits [D4], [D1:D0]*/
+		adi,gc-rx2-mode = <2>;
+			/*RX2 Gain control operation: Manual gain (0); 
+			Fast attack AGC (1); Slow attack AGC (2); Hybrid AGC (3). 
+			See register 0x0FA, bits [D4], [D3:D2].*/
+		adi,gc-adc-ovr-sample-size = <4>; /* sum 4 samples */
+			/*This attribute equals the number of ADC output
+			samples used to determine an ADC overload. See register 0x0FC,
+			bits [D2:D0]. This data is processed by the driver.*/
+		adi,gc-adc-small-overload-thresh = <47>; /* sum of squares */
+			/*This attribute sets the small ADC overload. See register 0x104.*/
+		adi,gc-adc-large-overload-thresh = <58>; /* sum of squares */
+			/*This attribute sets the large ADC overload. See register 0x105.*/
+		adi,gc-lmt-overload-high-thresh = <800>; /* mV */
+			/*This attribute sets the large LMT overload threshold. See register 0x108. This data is processed by the driver.*/
+		adi,gc-lmt-overload-low-thresh = <704>; /* mV */
+			/*This attribute sets the small LMT overload threshold. See register 0x107. This data is processed by the driver.*/
+		adi,gc-dec-pow-measurement-duration = <8192>; /* 0..524288 Samples */
+			/*The power measurement duration used by the gain control algorithm. 
+			See register 0x15C, bits [D3:D0]. This data is processed by the driver.*/
+		adi,gc-low-power-thresh = <24>; /* 0..-64 dBFS vals are set pos */
+			/*This threshold is used by the fast AGC to determine if the gain should be 
+			increased. It can also be used to trigger a CTRL_OUT
+			signal transition in MGC mode. See register 0x114, bits [D6:D0]. 
+			This data is processed by the driver.*/
+		//adi,gc-dig-gain-enable;
+			/*This attribute is used in split table mode to enable the digital gain pointer. See register 0x0FB, bit D2.*/
+		//adi,gc-max-dig-gain = <15>;
+			/*This attribute equals the maximum allowable digital gain, and applies to all
+			gain control modes. See register 0x100, bits [D4:D0].*/
+
+
+
+	/* ------ Manual Gain Control Setup ------ */
+		//adi,mgc-rx1-ctrl-inp-enable; 
+			/* uncomment to use ctrl inputs 	
+			If this attribute is clear, SPI writes change the RX1 gain. 
+			When this attribute is set, control input pins control the gain. See register 0x0FB, bit [D0].*/
+		//adi,mgc-rx2-ctrl-inp-enable; 
+			/* uncomment to use ctrl inputs 	
+			If this attribute is clear, SPI writes change the RX2 gain.
+			When this attribute is set, control input pins control the gain. See register 0x0FB, bit [D1].*/
+		adi,mgc-inc-gain-step = <2>;
+			/*This attribute applies if the CTRL_IN signals control gain. 
+			The gain index increases by this value when certain CTRL_IN 
+			signals transition high. See register 0x0FC, 
+			bits [D7:D5]. This data is processed by the driver.*/
+		adi,mgc-dec-gain-step = <2>;
+			/*This attribute applies if the CTRL_IN signals control gain. The gain index decreases by this value 
+			when certain CTRL_IN signals transition high. See register 0x0FE, 
+			bits [D7:D5]. This data is processed by the driver.*/
+			/* mgc-split-table-ctrl-inp-gain-mode:
+		 	* (relevant if adi,split-gain-table-mode-enable is set)
+		 	* 0 = AGC determine this
+		 	* 1 = only in LPF
+		 	* 2 = only in LMT
+		 	*/
+		adi,mgc-split-table-ctrl-inp-gain-mode = <0>;
+			/*AGC determine this (0); Only in LPF(1); Only in LMT (2). See register 0x0FC, bits [D4], [D3].*/
+		
+		
+		
+	/* ------ Automatic Gain Control Setup ------ */
+		adi,agc-attack-delay-extra-margin-us= <1>; /* us */
+		adi,agc-outer-thresh-high = <5>; /* -dBFS */
+		adi,agc-outer-thresh-high-dec-steps = <2>; /* 0..15 */
+		adi,agc-inner-thresh-high = <10>; /* -dBFS */
+		adi,agc-inner-thresh-high-dec-steps = <1>; /* 0..7 */
+		adi,agc-inner-thresh-low = <12>; /* -dBFS */
+		adi,agc-inner-thresh-low-inc-steps = <1>; /* 0..7 */
+		adi,agc-outer-thresh-low = <18>; /* -dBFS */
+		adi,agc-outer-thresh-low-inc-steps = <2>; /* 0..15 */
+		adi,agc-adc-small-overload-exceed-counter = <10>; /* 0..15 */
+		adi,agc-adc-large-overload-exceed-counter = <10>; /* 0..15 */
+		adi,agc-adc-large-overload-inc-steps = <2>; /* 0..15 */
+		//adi,agc-adc-lmt-small-overload-prevent-gain-inc-enable;
+		adi,agc-lmt-overload-large-exceed-counter = <10>; /* 0..15 */
+		adi,agc-lmt-overload-small-exceed-counter = <10>; /* 0..15 */
+		adi,agc-lmt-overload-large-inc-steps = <2>; /* 0..7 */
+		//adi,agc-dig-saturation-exceed-counter = <3>; /* 0..15 */
+		//adi,agc-dig-gain-step-size = <4>; /* 1..8 */
+		//adi,agc-sync-for-gain-counter-enable;
+		adi,agc-gain-update-interval-us = <1000>;  /* 1ms */
+		//adi,agc-immed-gain-change-if-large-adc-overload-enable;
+		//adi,agc-immed-gain-change-if-large-lmt-overload-enable;
+
+
+
+	/* ------ Fast AGC ------ */
+		adi,fagc-dec-pow-measurement-duration = <64>; /* 64 Samples */
+        //adi,fagc-allow-agc-gain-increase-enable;
+        adi,fagc-lp-thresh-increment-steps = <1>;
+        adi,fagc-lp-thresh-increment-time = <5>;
+        adi,fagc-energy-lost-stronger-sig-gain-lock-exit-cnt = <8>;
+        adi,fagc-final-overrange-count = <3>;
+        //adi,fagc-gain-increase-after-gain-lock-enable;
+        adi,fagc-gain-index-type-after-exit-rx-mode = <0>;
+        adi,fagc-lmt-final-settling-steps = <1>;
+        adi,fagc-lock-level = <10>;
+        adi,fagc-lock-level-gain-increase-upper-limit = <5>;
+        adi,fagc-lock-level-lmt-gain-increase-enable;
+        adi,fagc-lpf-final-settling-steps = <1>;
+        adi,fagc-optimized-gain-offset = <5>;
+        adi,fagc-power-measurement-duration-in-state5 = <64>;
+        adi,fagc-rst-gla-engergy-lost-goto-optim-gain-enable;
+        adi,fagc-rst-gla-engergy-lost-sig-thresh-below-ll = <10>;
+        adi,fagc-rst-gla-engergy-lost-sig-thresh-exceeded-enable;
+        adi,fagc-rst-gla-if-en-agc-pulled-high-mode = <0>;
+        adi,fagc-rst-gla-large-adc-overload-enable;
+        adi,fagc-rst-gla-large-lmt-overload-enable;
+        adi,fagc-rst-gla-stronger-sig-thresh-above-ll = <10>;
+        adi,fagc-rst-gla-stronger-sig-thresh-exceeded-enable;
+        adi,fagc-state-wait-time-ns = <260>;
+        adi,fagc-use-last-lock-level-for-set-gain-enable;
+
+
+
+	/* ------ RSSI ------ */
+			/* adi,rssi-restart-mode:
+		 	 * 0 = AGC_IN_FAST_ATTACK_MODE_LOCKS_THE_GAIN,  TDD
+		 	 * 1 = EN_AGC_PIN_IS_PULLED_HIGH,               TDD, measuring a symbol late in the burst      
+		 	 * 2 = ENTERS_RX_MODE,                          TDD
+			 * 3 = GAIN_CHANGE_OCCURS,                      FDD
+			 * 4 = SPI_WRITE_TO_REGISTER,                   FDD
+			 * 5 = GAIN_CHANGE_OCCURS_OR_EN_AGC_PIN_PULLED_HIGH,          FDD
+			 */
+		adi,rssi-restart-mode = <3>;
+			//adi,rssi-unit-is-rx-samples-enable;
+			/*Duration, Delay and Wait are expressed in Rx sample-rate cycles. If not set unit is micro seconds*/
+		adi,rssi-delay = <1>; /* 1us */
+			/*When the RSSI algorithm (re)starts, the AD9361 first waits for the Rx signal path to settle. This delay is the “RSSI Delay”*/
+		adi,rssi-wait = <1>; /* 1us */
+			/*After the “RSSI Delay” the RSSI algorithm alternates between measuring RSSI and waiting “RSSI Wait” to measure RSSI*/
+		adi,rssi-duration = <1000>; /* 1ms */
+			/*Total RSSI measurement duration*/
+
+
+
+	/* ------ Control Outputs ------ */
+		adi,ctrl-outs-index = <0>;
+		adi,ctrl-outs-enable-mask = <0xFF>;
+
+
+
+	/* ------ AuxADC Temp Sense Control ------ */
+		adi,temp-sense-measurement-interval-ms = <1000>;
+			/*Measurement interval in ms. This data is processed by the driver*/
+		adi,temp-sense-offset-signed = <0xCE>;
+			/*Offset in signed deg. C, range -128…127*/
+		adi,temp-sense-periodic-measurement-enable;
+			/*Enables periodic measurement*/
+
+
+
+	/* ------ AuxDAC Control ------ */
+		adi,aux-dac-manual-mode-enable;
+			/*If enabled the Aux DAC doesn't slave the ENSM*/
+		adi,aux-dac1-default-value-mV = <0>;
+			/*DAC1 default voltage in mV*/
+		//adi,aux-dac1-active-in-rx-enable;
+			/*If enabled DAC is active in RX mode*/
+		//adi,aux-dac1-active-in-tx-enable;
+			/*If enabled DAC is active in TX mode*/
+		//adi,aux-dac1-active-in-alert-enable;
+			/*If enabled DAC is active in ALERT mode*/
+		adi,aux-dac1-rx-delay-us = <0>;
+			/*RX delay in us*/
+		adi,aux-dac1-tx-delay-us = <0>;
+			/*TX delay in us*/
+		adi,aux-dac2-default-value-mV = <0>;
+			/*DAC2 default voltage in mV*/
+		//adi,aux-dac2-active-in-rx-enable;
+			/*If enabled DAC is active in RX mode*/
+		//adi,aux-dac2-active-in-tx-enable;
+			/*If enabled DAC is active in TX mode*/
+		//adi,aux-dac2-active-in-alert-enable;
+			/*If enabled DAC is active in ALERT mode*/
+		adi,aux-dac2-rx-delay-us = <0>;
+			/*RX delay in us*/
+		adi,aux-dac2-tx-delay-us = <0>;
+			/*TX delay in us*/
+	};
+};

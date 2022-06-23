@@ -1,0 +1,55 @@
+/dts-v1/;
+#include "zynq-7000.dtsi"
+/*#include "pl.dtsi"*/
+#include "pcw.dtsi"
+#include "pl_axi_ctl.dtsi"
+
+/ {
+	model = "Xilinx Zynq ZC706";
+	
+	chosen {
+		bootargs = "console=ttyPS0,115200 root=/dev/mmcblk0p2 rw earlyprintk rootfstype=ext4 rootwait";
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		ethernet0 = &gem0;
+		i2c0 = &i2c0;
+		serial0 = &uart1;
+		mmc0 = &sdhci0;
+		spi0 = &qspi;
+		spi1 = &spi0;
+	};
+	
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x40000000>;
+	};
+};
+
+&gem0 {
+	local-mac-address = [00 0a 35 00 00 00];
+};
+
+
+#define fmc_spi spi0
+#define pmod_spi spi1
+
+#include "adi-fmcomms2.dtsi"
+#include "adi-fmcomms3-up-down-converter.dtsi"
+
+&adc0_ad9361 {
+	en_agc-gpios = <&gpio0 98 0>;
+	sync-gpios = <&gpio0 99 0>;
+	reset-gpios = <&gpio0 100 0>; /* Previously 83 */
+	enable-gpios = <&gpio0 101 0>;
+	txnrx-gpios = <&gpio0 102 0>;
+};
+
+&lo_pll0_rx_adf4351 {
+	gpios = <&gpio0 103 0>;
+};
+
+&lo_pll0_tx_adf4351 {
+	gpios = <&gpio0 104 0>;
+};

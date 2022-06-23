@@ -1,0 +1,11 @@
+Bitstream_image=system.bit
+Bitstream_load_address=0x00100000
+Bitstream_size=0x01000000
+Devicetree_image=system.dtb
+Devicetree_load_address=0x01500000
+Kernel_image=zImage
+Kernel_load_address=0x02000000
+uenvcmd=run Adi_sdboot
+Adi_sdboot=echo DDIIYY Copying Linux from SD to RAM... && load mmc 0 ${Bitstream_load_address} ${Bitstream_image} && fpga loadb 0 ${Bitstream_load_address} ${Bitstream_size} && load mmc 0 ${Kernel_load_address} ${Kernel_image} && load mmc 0 ${Devicetree_load_address} ${Devicetree_image} && bootz ${Kernel_load_address} - ${Devicetree_load_address};
+ipaddr=192.168.2.10
+bootdelay=2
